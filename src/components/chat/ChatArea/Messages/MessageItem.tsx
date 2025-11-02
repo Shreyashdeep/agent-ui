@@ -7,14 +7,47 @@ import Images from './Multimedia/Images'
 import Audios from './Multimedia/Audios'
 import { memo } from 'react'
 import AgentThinkingLoader from './AgentThinkingLoader'
+import { parseMessageForCharts } from '@/lib/messageChartIntegration'
+import { ChartWithExpand } from '@/components/ui/charts/ChartWithExpand'
 
 interface MessageProps {
   message: ChatMessage
 }
 
+// const AgentMessage = ({ message }: MessageProps) => {
+//   const { streamingErrorMessage } = useStore()
+//   let messageContent
+//   if (message.streamingError) {
+//     messageContent = (
+//       <p className="text-destructive">
+//         Oops! Something went wrong while streaming.{' '}
+//         {streamingErrorMessage ? (
+//           <>{streamingErrorMessage}</>
+//         ) : (
+//           'Please try refreshing the page or try again later.'
+//         )}
+//       </p>
+//     )
+//   } else if (message.content) {
+//     messageContent = (
+//       <div className="flex w-full flex-col gap-4">
+//         <MarkdownRenderer>{message.content}</MarkdownRenderer>
+//         {message.videos && message.videos.length > 0 && (
+//           <Videos videos={message.videos} />
+//         )}
+//         {message.images && message.images.length > 0 && (
+//           <Images images={message.images} />
+//         )}
+//         {message.audio && message.audio.length > 0 && (
+//           <Audios audio={message.audio} />
+//         )}
+//       </div>
+//     )
+//   }
 const AgentMessage = ({ message }: MessageProps) => {
   const { streamingErrorMessage } = useStore()
   let messageContent
+
   if (message.streamingError) {
     messageContent = (
       <p className="text-destructive">
@@ -27,9 +60,24 @@ const AgentMessage = ({ message }: MessageProps) => {
       </p>
     )
   } else if (message.content) {
+    // Parse message for charts
+    const { text, charts } = parseMessageForCharts(message)
+
     messageContent = (
       <div className="flex w-full flex-col gap-4">
-        <MarkdownRenderer>{message.content}</MarkdownRenderer>
+        {/* Render charts first */}
+        {charts.length > 0 && (
+          <div className="space-y-3">
+            {charts.map((chart, idx) => (
+              <ChartWithExpand key={`chart-${idx}`} chart={chart} />
+            ))}
+          </div>
+        )}
+
+        {/* Render text content */}
+        {text && <MarkdownRenderer>{text}</MarkdownRenderer>}
+
+        {/* Render multimedia */}
         {message.videos && message.videos.length > 0 && (
           <Videos videos={message.videos} />
         )}
@@ -69,7 +117,7 @@ const AgentMessage = ({ message }: MessageProps) => {
   }
 
   return (
-    <div className="flex flex-row items-start gap-4 font-geist">
+    <div className="font-geist flex flex-row items-start gap-4">
       <div className="flex-shrink-0">
         <Icon type="agent" size="sm" />
       </div>
@@ -84,7 +132,7 @@ const UserMessage = memo(({ message }: MessageProps) => {
       <div className="flex-shrink-0">
         <Icon type="user" size="sm" />
       </div>
-      <div className="text-md rounded-lg font-geist text-secondary">
+      <div className="text-md font-geist text-secondary rounded-lg">
         {message.content}
       </div>
     </div>
