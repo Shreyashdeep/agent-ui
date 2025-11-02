@@ -1,16 +1,72 @@
 import { RunResponseContent } from '@/types/os'
 import { useCallback } from 'react'
+import { detectChart, stripChartBlocksFromContent } from '@/lib/chartDetection'
+import type { ChartMessage } from '@/types/charts'
 
 /**
  * Processes a single JSON chunk by passing it to the provided callback.
  * @param chunk - A parsed JSON object of type RunResponseContent.
  * @param onChunk - Callback to handle the chunk.
  */
+// function processChunk(
+//   chunk: RunResponseContent,
+//   onChunk: (chunk: RunResponseContent) => void
+// ) {
+//   onChunk(chunk)
+// }
+
 function processChunk(
   chunk: RunResponseContent,
-  onChunk: (chunk: RunResponseContent) => void
+  onChunk: (chunk: RunResponseContent) => void,
+  onChart?: (chart: ChartMessage, source: string) => void
 ) {
+  // Detect charts first
+  const chartDetection = detectChart(chunk, false)
+
+  if (chartDetection.hasChart && chartDetection.chart) {
+    console.log(`📊 Chart detected via ${chartDetection.source}`)
+    onChart?.(chartDetection.chart, chartDetection.source)
+
+    // Strip chart blocks from content if from code block
+    if (chartDetection.source === 'code_block' && chunk.content) {
+      chunk.content = stripChartBlocksFromContent(chunk.content)
+    }
+  } else if (chartDetection.error) {
+    console.warn(`⚠️ Chart detection error: ${chartDetection.error}`)
+  }
+
+  // Continue with normal processing
   onChunk(chunk)
+}
+
+interface ChunkProcessor {
+  onChunk: (chunk: RunResponseContent) => void
+  onChart?: (chart: ChartMessage, source: string) => void
+}
+
+function processChunkWithChartDetection(
+  chunk: RunResponseContent,
+  processor: ChunkProcessor
+) {
+  // First, detect if this chunk contains a chart
+  const chartDetection = detectChart(chunk, false) // Disable keyword fallback for production
+
+  if (chartDetection.hasChart && chartDetection.chart) {
+    // Emit chart detection event
+    console.log(`📊 Chart detected via ${chartDetection.source}`)
+    processor.onChart?.(chartDetection.chart, chartDetection.source)
+
+    // If chart came from code block, also strip it from content
+    if (chartDetection.source === 'code_block' && chunk.content) {
+      chunk.content = stripChartBlocksFromContent(chunk.content)
+    }
+  } else if (chartDetection.error) {
+    // Log validation errors but don't fail
+    console.warn(`⚠️ Chart detection error: ${chartDetection.error}`)
+  }
+
+  // Process the chunk normally
+  processor.onChunk(chunk)
 }
 
 // TODO: Make new format the default and phase out legacy format
@@ -176,6 +232,8 @@ function parseBuffer(
  * @returns An object containing the streamResponse function.
  */
 export default function useAIResponseStream() {
+//  callback: (chunk: RunResponseContent) => void,
+// onChartDetected?: (chart: ChartMessage, source: string) => void
   const streamResponse = useCallback(
     async (options: {
       apiUrl: string
@@ -184,6 +242,7 @@ export default function useAIResponseStream() {
       onChunk: (chunk: RunResponseContent) => void
       onError: (error: Error) => void
       onComplete: () => void
+      onChartDetected?: (chart: ChartMessage, source: string) => void
     }): Promise<void> => {
       const {
         apiUrl,

@@ -1,3 +1,15 @@
+import type { ChartMessage } from "./charts"
+
+export type ContentType = 'text' | 'markdown' | 'code' | 'chart'
+export interface MessageContent {
+  type: ContentType
+  content: string | ChartMessage
+  timestamp?: number
+}
+export interface ExtendedRunResponseContent extends RunResponseContent {
+  content_type: ContentType 
+  chart_data?: ChartMessage 
+}
 export interface ToolCall {
   role: 'user' | 'tool' | 'system' | 'assistant'
   content: string | null
