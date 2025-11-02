@@ -29,7 +29,11 @@ function processChunk(
 
     // Strip chart blocks from content if from code block
     if (chartDetection.source === 'code_block' && chunk.content) {
-      chunk.content = stripChartBlocksFromContent(chunk.content)
+      if (typeof chunk.content === 'string') {
+        chunk.content = stripChartBlocksFromContent(chunk.content)
+      } else {
+        // If content is an object, leave it as-is (can't strip string chart blocks)
+      }
     }
   } else if (chartDetection.error) {
     console.warn(`⚠️ Chart detection error: ${chartDetection.error}`)
@@ -58,7 +62,11 @@ function processChunkWithChartDetection(
 
     // If chart came from code block, also strip it from content
     if (chartDetection.source === 'code_block' && chunk.content) {
-      chunk.content = stripChartBlocksFromContent(chunk.content)
+      if (typeof chunk.content === 'string') {
+        chunk.content = stripChartBlocksFromContent(chunk.content)
+      } else {
+        // If content is an object, leave it as-is (can't strip string chart blocks)
+      }
     }
   } else if (chartDetection.error) {
     // Log validation errors but don't fail
