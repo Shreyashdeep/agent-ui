@@ -9,6 +9,8 @@ import { memo } from 'react'
 import AgentThinkingLoader from './AgentThinkingLoader'
 import { parseMessageForCharts } from '@/lib/messageChartIntegration'
 import { ChartWithExpand } from '@/components/ui/charts/ChartWithExpand'
+import { safeParseMessageForCharts } from '@/lib/safeMessageChartIntegration'
+import { ChartFallback } from '@/components/ui/charts/ChartFallback'
 
 interface MessageProps {
   message: ChatMessage
@@ -61,7 +63,7 @@ const AgentMessage = ({ message }: MessageProps) => {
     )
   } else if (message.content) {
     // Parse message for charts
-    const { text, charts } = parseMessageForCharts(message)
+    const { text, charts, errors } = safeParseMessageForCharts(message)
 
     messageContent = (
       <div className="flex w-full flex-col gap-4">
@@ -74,6 +76,19 @@ const AgentMessage = ({ message }: MessageProps) => {
           </div>
         )} */}
 
+        {errors.length > 0 && (
+          <div className="space-y-2">
+            {errors.map((error) => (
+              <ChartFallback
+                key={`chart-error-${error.chartIndex}`}
+                title={`Chart ${error.chartIndex} Error`}
+                message={error.message}
+                type="error"
+              />
+            ))}
+          </div>
+        )}
+
         {charts.length > 0 && (
           <div className="space-y-3">
             {charts.map((chart, idx) => (
@@ -82,6 +97,7 @@ const AgentMessage = ({ message }: MessageProps) => {
                 chart={chart}
                 debounceMs={200}
                 isStreaming={!message.content.endsWith('\n')} // Simple heuristic: still streaming if message doesn't end
+                showErrorHandling={true}
               />
             ))}
           </div>

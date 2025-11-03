@@ -6,7 +6,32 @@
   :root {
     --color-border-default: 255, 255, 255, 0.2;
     --scrollbar-width: 0.1rem;
+    --chart-1: 12 76% 61%; /* Blue */
+    --chart-2: 272 72% 50%; /* Purple */
+    --chart-3: 262 80% 50%; /* Violet */
+    --chart-4: 339 89% 60%; /* Pink */
+    --chart-5: 22 96% 59%; /* Orange */
+    --chart-6: 47 100% 50%; /* Amber */
+    --chart-7: 142 76% 36%; /* Green */
+    --chart-8: 169 85% 40%; /* Cyan */
+    --chart-9: 190 98% 39%; /* Sky */
+    --chart-10: 217 91% 60%; /* Blue (lighter) */
+    --chart-11: 251 91% 36%; /* Indigo */
+    --chart-12: 38 92% 50%; /* Lime */
   }
+  @layer utilities {
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+}
 
   body {
     @apply bg-background/80 text-secondary;
@@ -29,3 +54,20 @@
   background-color: transparent;
   border-radius: 9999px;
 }
+@media (prefers-color-scheme: dark) {
+    :root {
+      /* Dark mode chart colors */
+      --chart-1: 217 91% 60%;    /* Blue */
+      --chart-2: 280 85% 64%;    /* Purple */
+      --chart-3: 262 80% 60%;    /* Violet */
+      --chart-4: 339 84% 66%;    /* Pink */
+      --chart-5: 22 100% 64%;    /* Orange */
+      --chart-6: 47 100% 59%;    /* Amber */
+      --chart-7: 142 72% 29%;    /* Green */
+      --chart-8: 169 80% 42%;    /* Cyan */
+      --chart-9: 190 100% 42%;   /* Sky */
+      --chart-10: 217 95% 65%;   /* Blue (lighter) */
+      --chart-11: 251 95% 55%;   /* Indigo */
+      --chart-12: 38 92% 50%;    /* Lime */
+    }
+  }

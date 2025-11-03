@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import { ChartRenderer } from './ChartRenderer'
 import { DebouncedChartRenderer } from './DebouncedChartRenderer'
+import { SafeChartRenderer } from './SafeChartRenderer'
 import { ChartModal } from './ChartModal'
 import { Button } from '@/components/ui/button'
 import { Maximize2 } from 'lucide-react'
@@ -11,19 +12,25 @@ interface ChartWithExpandProps {
   height?: number
   debounceMs?: number
   isStreaming?: boolean
+  showErrorHandling?: boolean
 }
 
 export const ChartWithExpand: React.FC<ChartWithExpandProps> = ({
   chart,
   height = 350,
   debounceMs = 200,
-  isStreaming = false
+  isStreaming = false,
+  showErrorHandling = true
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  // Use debounced renderer if streaming
-  const ChartComponent = isStreaming ? DebouncedChartRenderer : ChartRenderer
-
+  // Choose renderer based on settings
+  let ChartComponent: any
+  if (showErrorHandling) {
+    ChartComponent = isStreaming ? DebouncedChartRenderer : SafeChartRenderer
+  } else {
+    ChartComponent = isStreaming ? DebouncedChartRenderer : ChartRenderer
+  }
   return (
     <>
       <div className="relative group">
