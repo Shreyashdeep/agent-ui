@@ -5,7 +5,7 @@ import type { ChatMessage } from '@/types/os'
 import Videos from './Multimedia/Videos'
 import Images from './Multimedia/Images'
 import Audios from './Multimedia/Audios'
-import { memo } from 'react'
+import { memo, useMemo } from 'react'
 import AgentThinkingLoader from './AgentThinkingLoader'
 import { parseMessageForCharts } from '@/lib/messageChartIntegration'
 import { ChartWithExpand } from '@/components/ui/charts/ChartWithExpand'
@@ -14,6 +14,7 @@ import { ChartFallback } from '@/components/ui/charts/ChartFallback'
 
 interface MessageProps {
   message: ChatMessage
+  isLastMessage?: boolean
 }
 
 // const AgentMessage = ({ message }: MessageProps) => {
@@ -49,6 +50,10 @@ interface MessageProps {
 const AgentMessage = ({ message }: MessageProps) => {
   const { streamingErrorMessage } = useStore()
   let messageContent
+  const parsedMessage = useMemo(
+    () => safeParseMessageForCharts(message),
+    [message.content, message.created_at] // Only re-parse on content change
+  )
 
   if (message.streamingError) {
     messageContent = (
@@ -89,7 +94,7 @@ const AgentMessage = ({ message }: MessageProps) => {
           </div>
         )}
 
-        {charts.length > 0 && (
+        {/* {charts.length > 0 && (
           <div className="space-y-3">
             {charts.map((chart, idx) => (
               <ChartWithExpand
@@ -97,6 +102,20 @@ const AgentMessage = ({ message }: MessageProps) => {
                 chart={chart}
                 debounceMs={200}
                 isStreaming={!message.content.endsWith('\n')} // Simple heuristic: still streaming if message doesn't end
+                showErrorHandling={true}
+              />
+            ))}
+          </div>
+        )} */}
+
+        {parsedMessage.charts.length > 0 && (
+          <div className="space-y-3">
+            {parsedMessage.charts.map((chart, idx) => (
+              <ChartWithExpand
+                key={`chart-${chart.id || idx}`}
+                chart={chart}
+                debounceMs={200}
+                isStreaming={!message.content.endsWith('\n')}
                 showErrorHandling={true}
               />
             ))}
@@ -168,6 +187,7 @@ const UserMessage = memo(({ message }: MessageProps) => {
   )
 })
 
-AgentMessage.displayName = 'AgentMessage'
+const MemoizedAgentMessage = memo(AgentMessage)
+MemoizedAgentMessage.displayName = 'AgentMessage'
 UserMessage.displayName = 'UserMessage'
-export { AgentMessage, UserMessage }
+export { MemoizedAgentMessage as AgentMessage, UserMessage }

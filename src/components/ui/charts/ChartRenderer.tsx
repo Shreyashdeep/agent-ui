@@ -1,8 +1,10 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React, { useMemo, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import type { ChartMessage } from '@/types/charts'
+import { downsampleChartIfNeeded, shouldDownsample } from '@/lib/chartDataDownsampling'
+import { logPerformanceChecks } from '@/lib/performanceChecklist'
 import {
   isLineChart,
   isBarChart,
@@ -106,6 +108,26 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({
         )
     }
   }, [chart, height])
+//   export const ChartRenderer: React.FC<ChartRendererProps> = ({
+//   chart,
+//   height = 400,
+//   className = ''
+// }) => {
+//   // Optimize large datasets
+//   const optimizedChart = useMemo(() => {
+//     if (shouldDownsample(chart)) {
+//       console.log(`[Performance] Downsampling chart: ${chart.data.length} → optimized`)
+//       return downsampleChartIfNeeded(chart)
+//     }
+//     return chart
+//   }, [chart])
+
+//   // Log performance checks in development
+//   useEffect(() => {
+//     if (process.env.NODE_ENV === 'development') {
+//       logPerformanceChecks(optimizedChart)
+//     }
+//   }, [optimizedChart])
 
   return (
     <ChartContainer
