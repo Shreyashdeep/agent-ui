@@ -66,10 +66,23 @@ const AgentMessage = ({ message }: MessageProps) => {
     messageContent = (
       <div className="flex w-full flex-col gap-4">
         {/* Render charts first */}
-        {charts.length > 0 && (
+        {/* {charts.length > 0 && (
           <div className="space-y-3">
             {charts.map((chart, idx) => (
               <ChartWithExpand key={`chart-${idx}`} chart={chart} />
+            ))}
+          </div>
+        )} */}
+
+        {charts.length > 0 && (
+          <div className="space-y-3">
+            {charts.map((chart, idx) => (
+              <ChartWithExpand
+                key={`chart-${idx}`}
+                chart={chart}
+                debounceMs={200}
+                isStreaming={!message.content.endsWith('\n')} // Simple heuristic: still streaming if message doesn't end
+              />
             ))}
           </div>
         )}

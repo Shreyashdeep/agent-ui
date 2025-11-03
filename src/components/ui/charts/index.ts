@@ -1,4 +1,5 @@
 export { ChartRenderer, default } from './ChartRenderer'
 export { ChartModal } from './ChartModal'
 export { ChartWithExpand } from './ChartWithExpand'
+export { DebouncedChartRenderer } from './DebouncedChartRenderer'
 export * from './primitives'

@@ -1,7 +1,5 @@
 import { useCallback } from 'react'
-
 import { APIRoutes } from '@/api/routes'
-
 import useChatActions from '@/hooks/useChatActions'
 import { useStore } from '../store'
 import { RunEvent, RunResponseContent, type RunResponse } from '@/types/os'
@@ -10,6 +8,7 @@ import useAIResponseStream from './useAIResponseStream'
 import { ToolCall } from '@/types/os'
 import { useQueryState } from 'nuqs'
 import { getJsonMarkdown } from '@/lib/utils'
+import { detectChart } from '@/lib/chartDetection'
 
 const useAIChatStreamHandler = () => {
   const setMessages = useStore((state) => state.setMessages)
@@ -222,6 +221,13 @@ const useAIChatStreamHandler = () => {
               chunk.event === RunEvent.RunContent ||
               chunk.event === RunEvent.TeamRunContent
             ) {
+              const chartDetection = detectChart(chunk, false)
+
+              if (chartDetection.hasChart && chartDetection.chart) {
+                console.log(
+                  `📊 Chart detected in stream: ${chartDetection.chart.meta.title}`
+                )
+              }
               setMessages((prevMessages) => {
                 const newMessages = [...prevMessages]
                 const lastMessage = newMessages[newMessages.length - 1]
